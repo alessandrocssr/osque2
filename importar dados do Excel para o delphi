@@ -1,0 +1,56 @@
+function XlsToStringGrid(AGrid: TStringGrid; AXLSFile: string): Boolean;
+const
+	xlCellTypeLastCell = $0000000B;
+var
+	XLApp, Sheet: OLEVariant;
+	RangeMatrix: Variant;
+	x, y, k, r: Integer;
+begin
+Result:=False;
+//Cria Excel- OLE Object
+XLApp:=CreateOleObject('Excel.Application');
+try
+	//Esconde Excel
+	XLApp.Visible:=False;
+	//Abre o Workbook
+	XLApp.Workbooks.Open(AXLSFile);
+	Sheet:=XLApp.Workbooks[ExtractFileName(AXLSFile)].WorkSheets[1];
+	Sheet.Cells.SpecialCells(xlCellTypeLastCell, EmptyParam).Activate;
+	//Pegar o número da última linha
+	x:=XLApp.ActiveCell.Row;
+	//Pegar o número da última coluna
+	y:=XLApp.ActiveCell.Column;
+	//Seta Stringgrid linha e coluna
+	AGrid.RowCount:=x;
+	AGrid.ColCount:=y;
+	//Associaca a variant WorkSheet com a variant do Delphi
+	RangeMatrix:=XLApp.Range['A1', XLApp.Cells.Item[X, Y]].Value;
+	//Cria o loop para listar os registros no TStringGrid
+	k:=1;
+	repeat
+		for r:=1 to y do
+			AGrid.Cells[(r - 1),(k - 1)]:=RangeMatrix[K, R];
+		Inc(k,1);
+	until k > x;
+	RangeMatrix:=Unassigned;
+finally
+	//Fecha o Excel
+	if not VarIsEmpty(XLApp) then
+		begin
+		XLApp.Quit;
+		XLAPP:=Unassigned;
+		Sheet:=Unassigned;
+		Result:=True;
+		end;
+	end;
+end
+end;
+
+//Para Chamar o arquivo em um lugar padrao
+XlsToStringGrid(StringGrid1,'c:\arquivo_excel.xls');
+
+//Para Chamar o arquivo em que o usuario vá fazer a busca do arquivo
+//colocar um opendialog da palete dialogs
+
+if OpenDialog1.Execute then
+	XlsToStringGrid(StringGrid1,OpenDialog1.FileName);
